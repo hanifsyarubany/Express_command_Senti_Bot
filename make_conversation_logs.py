@@ -82,7 +82,7 @@ def create_database_conversation_logs(dict_convo):
     print("\n{} ======================================================\n".format(str(counter)))
 
 if __name__ == "__main__":
-    api_key = "zxjYWKfG5KYtuTwufTbJuPsmcjwt1j7psV44Pao1"
+    api_key = "COHERE_API_KEY"
     co = cohere.Client(api_key)
     counter = 0
     file = open("topics-make_conversation_logs.txt","r")
