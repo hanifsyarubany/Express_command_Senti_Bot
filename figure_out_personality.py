@@ -170,7 +170,7 @@ def update_personality_into_json_file(arr_user,personality_response):
             print("{}. NOT UPDATED".format(counter))
 
 if __name__ == "__main__":
-    api_key = "zxjYWKfG5KYtuTwufTbJuPsmcjwt1j7psV44Pao1"
+    api_key = "COHERE_API_KEY"
     co = cohere.Client(api_key)
 
     counter = 0
