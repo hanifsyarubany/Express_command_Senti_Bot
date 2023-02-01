@@ -1,0 +1,10 @@
+How should I respond to the following message: 
+"<<CONVO>>"
+
+Here are some contexts from the previous conversation:
+<<CONTEXT>>
+
+Some context from me:
+<<USER_CONTEXT>>
+
+Why do you responding this way?
