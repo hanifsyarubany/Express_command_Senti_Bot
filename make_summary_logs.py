@@ -123,7 +123,7 @@ def put_into_json_file(arr_convo,summary):
     save_json(filepath,payload)
 
 if __name__ == "__main__":
-    api_key = "zxjYWKfG5KYtuTwufTbJuPsmcjwt1j7psV44Pao1"
+    api_key = "API_KEY"
     co = cohere.Client(api_key)
     counter = 0
     convo_logs=load_convo()
