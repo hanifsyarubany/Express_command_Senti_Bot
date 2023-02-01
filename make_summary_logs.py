@@ -78,19 +78,6 @@ def create_dict_convo(convo):
         prev_time=cur_time
     return dict_convo
 
-def create_database_conversation_logs(dict_convo):
-    global counter
-    counter +=1
-
-    for time,dialog in dict_convo.items():
-        name,message=(dialog[0],dialog[1])
-        payload = {"User":name, "time":time,"timestring":timestamp_to_datetime(time), "message":message}
-        filename='log_{}_{}.json'.format(time,name.upper())
-        filepath="database_conversation_logs/{}".format(filename)
-        print("SAVED: {}".format(filepath))
-        save_json(filepath,payload)
-    print("\n{} ======================================================\n".format(str(counter)))
-
 def load_convo():
     files = os.listdir('database_conversation_logs')
     files = [i for i in files if '.json' in i]  # filter out any non-JSON files
@@ -105,9 +92,10 @@ def make_dialog(arr_convo):
     string_dialog=""
     for convo in arr_convo:
         string_dialog += "{}: {}\n".format(convo["User"],convo["message"])
+    string_dialog = string_dialog[:-1]
     return string_dialog
 
-def put_into_json_file(arr_convo,summary):
+def put_summary_into_json_file(arr_convo,summary):
     global counter
     arr_user = list(set([i["User"] for i in arr_convo]))
     time_start = min([i["time"] for i in arr_convo])
@@ -123,7 +111,7 @@ def put_into_json_file(arr_convo,summary):
     save_json(filepath,payload)
 
 if __name__ == "__main__":
-    api_key = "API_KEY"
+    api_key = "zxjYWKfG5KYtuTwufTbJuPsmcjwt1j7psV44Pao1"
     co = cohere.Client(api_key)
     counter = 0
     convo_logs=load_convo()
@@ -135,7 +123,7 @@ if __name__ == "__main__":
             pretty_string_dialog=make_dialog(temp_convo_logs)
             prompt = open_file("prompt-make_summary_logs.txt").replace('<<CONVO>>', pretty_string_dialog)
             summary = cohere_completion(prompt)
-            put_into_json_file(temp_convo_logs,summary)
+            put_summary_into_json_file(temp_convo_logs,summary)
             temp_convo_logs = list()
         else:
             temp_convo_logs.append(convo)

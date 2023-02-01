@@ -25,9 +25,6 @@ def load_json(filepath):
 def timestamp_to_datetime(unix_time):
     return datetime.datetime.fromtimestamp(unix_time).strftime("%A, %B %d, %Y at %I:%M%p %Z")
 
-def similarity(v1, v2):
-    return np.dot(v1, v2)/(norm(v1)*norm(v2))  # return cosine similarity
-
 def cohere_completion(prompt, engine='command-xlarge-20221108', temp=0.7, top_k=0, top_p=1.0, tokens=1000, freq_pen=0.0, pres_pen=0.0, stop=[]):
     global co
     sleep(0.5)
@@ -94,23 +91,24 @@ def create_database_conversation_logs(dict_convo):
         save_json(filepath,payload)
     print("\n{} ======================================================\n".format(str(counter)))
 
-def load_summary():
-    files = os.listdir('database_summary_logs')
+def load_convo():
+    files = os.listdir('database_conversation_logs')
     files = [i for i in files if '.json' in i]  # filter out any non-JSON files
     result = list()
     for file in files:
-        data = load_json('database_summary_logs/{}'.format(file))
+        data = load_json('database_conversation_logs/{}'.format(file))
         result.append(data)    
-    ordered = sorted(result, key=lambda d: d['time_start'], reverse=False)  # sort them all chronologically
+    ordered = sorted(result, key=lambda d: d['time'], reverse=False)  # sort them all chronologically
     return ordered
 
 def make_dialog(arr_convo):
     string_dialog=""
     for convo in arr_convo:
         string_dialog += "{}: {}\n".format(convo["User"],convo["message"])
+    string_dialog = string_dialog[:-1]
     return string_dialog
 
-def put_into_json_file(arr_convo,summary):
+def update_personality_into_json_file(arr_convo,summary):
     global counter
     arr_user = list(set([i["User"] for i in arr_convo]))
     time_start = min([i["time"] for i in arr_convo])
@@ -125,67 +123,72 @@ def put_into_json_file(arr_convo,summary):
     print("{}. SAVED: {}".format(counter,filepath))
     save_json(filepath,payload)
 
-#user, referred_user, reply_convo, user_context
+def update_personality_into_json_file(arr_user,personality_response):
+    global counter
+
+    arr_personality = ["openness","conscientiousness","extraversion","agreeableness","neuroticism"]
+    arr_each_person = personality_response.split("\n")
+    
+    filename = "personality_memory.json"
+
+    if not os.path.exists('personality_memory.json'): #file is not exist
+        try:
+            dict_payload={}
+            for user_item in arr_each_person:
+                user_item = user_item.replace(" ","")
+                username = user_item.split(":")[0]
+                if username in arr_user:
+                    user_personality = user_item.split(":")[1].split(",")
+                    user_personality = [i.lower() for i in user_personality if i.lower() in arr_personality]
+                    if user_personality != []:
+                        dict_personality = {}
+                        for i in user_personality:
+                            dict_personality[i]=1
+                        dict_payload[username]=dict_personality
+            save_json(filename,dict_payload)
+            print("{}. UPDATED".format(counter))
+        except:
+            print("{}. NOT UPDATED".format(counter))
+    else:
+        try:
+            personality_memory=load_json(filename)
+            for user_item in arr_each_person:
+                user_item = user_item.replace(" ","")
+                username = user_item.split(":")[0]
+                if username in arr_user:
+                    user_personality = user_item.split(":")[1].split(",")
+                    user_personality = [i.lower() for i in user_personality if i.lower() in arr_personality]
+                    if user_personality != []:
+                        for i in user_personality:
+                            if i in personality_memory[username].keys():
+                                personality_memory[username][i] +=1
+                            else:
+                                personality_memory[username][i] = 1
+            save_json(filename,personality_memory)
+            print("{}. UPDATED".format(counter))
+        except:
+            print("{}. NOT UPDATED".format(counter))
 
 if __name__ == "__main__":
     api_key = "zxjYWKfG5KYtuTwufTbJuPsmcjwt1j7psV44Pao1"
     co = cohere.Client(api_key)
-    
-    #EXAMPLE INPUT
-    user = "Hanif"
-    friend = "Malachi"
-    reply_convo = "Yeah, I know. I've seen a lot of people fall for phishing scams and other social engineering attacks."
-    user_context = "I want to express my agreement to him"
-    
+
     counter = 0
-    summary_logs=load_summary()
+    convo_logs=load_convo()
+    temp_convo_logs = list()
 
-    arr_summary = list()
-
-    for summary_json in summary_logs:
-        if (user in summary_json["User"]) and (friend in summary_json["User"]):
-            similarity_score=similarity(cohere_embedding(reply_convo),summary_json["vector"])
-            if similarity_score>0.28: #thresholding
-                arr_summary.append({"summary":summary_json["summary"],"similarity_score":similarity_score})
-            
-    arr_summary=sorted(arr_summary, key=lambda d: d['similarity_score'], reverse=True)
-    selected_summary = arr_summary[:3]
-    
-    # AI Prediction
-    prompt = open_file("prompt-main.txt")
-    prompt = prompt.replace("<<CONVO>>",reply_convo)
-    prompt = prompt.replace("<<USER_CONTEXT>>",user_context)
-    prompt = prompt.replace("<<FRIEND>>",friend)
-
-    if selected_summary != []:
-        counter=0
-        context=""
-        for item in selected_summary:
-            counter+=1
-            context+="{}. {}\n".format(counter,item["summary"])
-        context = context[:-1] #remove new line at the end of the string
-        prompt = prompt.replace("<<CONTEXT>>",context)
-    else:
-        prompt = prompt.replace("\nHere are some contexts from the previous conversation:\n<<CONTEXT>>\n","")
-    
-    #Load Personality
-    personality_memory = load_json("personality_memory.json")
-    total = sum(personality_memory[friend].values())
-
-    counter=0
-    personality_text=""
-    for personality,count in personality_memory[friend].items():
-        counter+=1
-        personality_percentage = round((count/total)*100,2)
-        personality_text+="{}. {}: {}%\n".format(counter,personality,personality_percentage)
-    personality_text=personality_text[:-1]
-
-    prompt = prompt.replace("<<PERSONALITY>>",personality_text)
-
-    response = cohere_completion(prompt)
-    print(response)
-
-
+    for convo in convo_logs:
+        if len(temp_convo_logs)==5:
+            counter += 1
+            pretty_string_dialog=make_dialog(temp_convo_logs)
+            prompt = open_file("prompt-figure_out_personality.txt").replace('<<CONVO>>', pretty_string_dialog)
+            response = cohere_completion(prompt,temp=0.7)
+            response = response.replace(".","")
+            arr_user = list(set([i["User"] for i in temp_convo_logs]))
+            update_personality_into_json_file(arr_user,response)
+            temp_convo_logs = list()
+        else:
+            temp_convo_logs.append(convo)
 
     
     

@@ -1,6 +1,10 @@
 How should I respond to the following message: 
 "<<CONVO>>"
 
+This message is from <<FRIEND>>. 
+<<FRIEND>> has a proportion of personality trait as follows:
+<<PERSONALITY>>
+
 Here are some contexts from the previous conversation:
 <<CONTEXT>>
 

@@ -1,0 +1,30 @@
+{
+  "Hanif": {
+    "agreeableness": 4,
+    "conscientiousness": 8,
+    "extraversion": 2,
+    "neuroticism": 5,
+    "openness": 13
+  },
+  "Malachi": {
+    "agreeableness": 5,
+    "conscientiousness": 12,
+    "extraversion": 5,
+    "neuroticism": 2,
+    "openness": 7
+  },
+  "Mildfun": {
+    "agreeableness": 6,
+    "conscientiousness": 1,
+    "extraversion": 5,
+    "neuroticism": 1,
+    "openness": 5
+  },
+  "Sangeetha": {
+    "agreeableness": 15,
+    "conscientiousness": 2,
+    "extraversion": 5,
+    "neuroticism": 1,
+    "openness": 10
+  }
+}

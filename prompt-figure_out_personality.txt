@@ -1,0 +1,6 @@
+There is a conversation below:
+
+<<CONVO>>
+
+Can you figure out their personality traits (Openness/Conscientiousness/Extraversion/Agreeableness/Neuroticism) from conversation above?
+You need to define a personality trait for all of them. Please separate all of them with newline.
