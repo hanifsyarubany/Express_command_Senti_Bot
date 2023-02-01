@@ -128,7 +128,7 @@ def put_into_json_file(arr_convo,summary):
 #user, referred_user, reply_convo, user_context
 
 if __name__ == "__main__":
-    api_key = "zxjYWKfG5KYtuTwufTbJuPsmcjwt1j7psV44Pao1"
+    api_key = "COHERE_API_KEY"
     co = cohere.Client(api_key)
     
     #EXAMPLE INPUT
